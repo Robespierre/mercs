@@ -4,5 +4,7 @@ using UnityEngine;
 
 public class TileOccupant_Script : MonoBehaviour
 {
+    public int tileI;
+    public int tileJ;
 
 }

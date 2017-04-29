@@ -5,13 +5,17 @@ using UnityEngine;
 public class Game_Script : MonoBehaviour {
 
     public enum GameState { playerTurn, enemyTurn, aftermath}
-    GameState currentGameState;
+    public GameState currentGameState;
+    public GameObject activeUnit;
+    public bool inputLocked;
 
     public BottomButton_Script bottomButtonScript;
 
     private void Start()
     {
         ChangeGameState(GameState.playerTurn);
+        activeUnit = GameObject.Find("Archer");//REMOVE. PLACEHOLDER
+        inputLocked = false;
     }
 
     public void ChangeGameState (GameState newState)

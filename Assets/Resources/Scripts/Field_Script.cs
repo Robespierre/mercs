@@ -88,11 +88,15 @@ public class Field
                 GameObject newTileObject = GameObject.Find("Tile(Clone) (" + count + ")");
                 count++;
                 newTile.AssignGameObject(newTileObject);
+                newTile.SetI(i);
+                newTile.SetJ(j);
+                newTileObject.GetComponent<TileObject_Script>().tileI = i;
+                newTileObject.GetComponent<TileObject_Script>().tileJ = j;
                 tileSet[i, j] = newTile;
             }
         }
     }
-    public void OccupantStep(Tile startTile, Tile finishTile)
+    private void OccupantStep(Tile startTile, Tile finishTile)
     {
         if (finishTile.GetOccupant() != null)
         {
@@ -106,11 +110,126 @@ public class Field
         }
         finishTile.SetOccupant(startTile.GetOccupant());
         startTile.SetOccupant(null);
+        finishTile.GetOccupant().GetComponent<TileOccupant_Script>().tileI = finishTile.GetI();
+        finishTile.GetOccupant().GetComponent<TileOccupant_Script>().tileJ = finishTile.GetJ();
         finishTile.GetOccupant().transform.position = new Vector3(finishTile.GetGameObject().transform.position.x, finishTile.GetGameObject().transform.position.y, finishTile.GetOccupant().transform.position.z);
+    }
+    public Tile[] FindPath(Tile startTile, Tile finishTile)
+    {
+        if (startTile == finishTile)
+        {
+            Debug.Log("Already on this tile!");
+            return null;
+        }
+        if (finishTile.GetOccupant() != null)
+        {
+            Debug.Log("Tile is occupied!");
+            return null;
+        }
+
+        Tile[,] previous = new Tile[size, size];
+        bool[,] active = new bool[size, size];
+        bool[,] newActive = new bool[size, size];
+
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++)
+            {
+                previous[i, j] = null;
+                active[i,j] = false;
+                newActive[i, j] = false;
+            }
+        }
+        active[startTile.GetI(), startTile.GetJ()] = true;
+        int iteration = 0;
+        bool blocked = false;
+        while ((!active[finishTile.GetI(), finishTile.GetJ()]) && !blocked)
+        {
+            blocked = true;
+            for (int i = 0; i < size; i++)
+            {
+                for (int j = 0; j < size; j++)
+                {
+                    if (active[i,j])
+                    {
+                        if ((i+1<size) && (tileSet[i+1,j].GetOccupant() == null) && (previous[i+1,j] == null))
+                        {
+                            newActive[i+1, j] = true;
+                            previous[i + 1, j] = tileSet[i, j];
+                            blocked = false;
+                        }
+                        if ((j + 1 < size) && (tileSet[i, j+1].GetOccupant() == null) && (previous[i, j+1] == null))
+                        {
+                            newActive[i, j+1] = true;
+                            previous[i, j+1] = tileSet[i, j];
+                            blocked = false;
+                        }
+                        if ((i - 1 >= 0) && (tileSet[i - 1, j].GetOccupant() == null) && (previous[i - 1, j] == null))
+                        {
+                            newActive[i - 1, j] = true;
+                            previous[i - 1, j] = tileSet[i, j];
+                            blocked = false;
+                        }
+                        if ((j - 1 >= 0) && (tileSet[i, j - 1].GetOccupant() == null) && (previous[i, j - 1] == null))
+                        {
+                            newActive[i, j - 1] = true;
+                            previous[i, j - 1] = tileSet[i, j];
+                            blocked = false;
+                        }
+                        active[i, j] = false;
+                    }
+                }
+            }
+            for (int i = 0; i < size; i++)
+            {
+                for (int j = 0; j < size; j++)
+                {
+                    if (newActive[i, j])
+                    {
+                        active[i, j] = true;
+                        newActive[i, j] = false;
+                    }
+                }
+            }
+            iteration++;
+        }
+        if (blocked)
+        {
+            Debug.Log("Path is blocked!");
+            return null;
+        }
+        Tile[] path = new Tile[iteration+1];
+        Tile toAdd = finishTile;
+        for (int stepNum = iteration; stepNum >= 0; stepNum--)
+        {
+            path[stepNum] = toAdd;
+            toAdd = previous[toAdd.GetI(), toAdd.GetJ()];
+        }
+        if (path[0] != startTile)
+        {
+            Debug.Log("Path is not fulfilled");
+            return null;
+        }
+        return path;
     }
     public Tile IntsToTile(int i, int j)
     {
         return tileSet[i, j];
+    }
+
+    public IEnumerator WalkThePath(Tile startTile, Tile finishTile)
+    {
+        Game_Script gameScript = GameObject.Find("GameManager").GetComponent<Game_Script>();
+        gameScript.inputLocked = true;
+        Tile[] walkway = FindPath(startTile, finishTile);
+
+        for (int step = 0; step < walkway.Length - 1; step++)
+        {
+            yield return new WaitForSeconds(0.2f);
+            OccupantStep(IntsToTile(walkway[step].GetI(), walkway[step].GetJ()), IntsToTile(walkway[step+1].GetI(), walkway[step+1].GetJ()));
+            yield return new WaitForSeconds(0.2f);
+        }
+        gameScript.inputLocked = false;
     }
 }
 
@@ -118,6 +237,9 @@ public class Tile
 {
     GameObject tileGameobject;
     private GameObject occupant;
+
+    int tileI;
+    int tileJ;
 
     public Tile()
     {
@@ -140,5 +262,21 @@ public class Tile
     public void SetOccupant(GameObject newOccupant)
     {
         occupant = newOccupant;
+    }
+    public int GetI()
+    {
+        return tileI;
+    }
+    public int GetJ()
+    {
+        return tileJ;
+    }
+    public void SetI(int newI)
+    {
+        tileI = newI;
+    }
+    public void SetJ(int newJ)
+    {
+        tileJ = newJ;
     }
 }
