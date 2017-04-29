@@ -18,13 +18,6 @@ public class Field_Script : MonoBehaviour
         currentField.IntsToTile(5, 5).SetOccupant(GameObject.Find("Wolf (0)"));
         currentField.IntsToTile(1, 5).SetOccupant(GameObject.Find("Wolf (1)"));
         currentField.IntsToTile(3, 6).SetOccupant(GameObject.Find("Wolf (2)"));
-        StartCoroutine(debugme());
-    }
-
-    IEnumerator debugme()
-    {
-        yield return new WaitForSeconds(3.0f);
-        currentField.OccupantStep(currentField.IntsToTile(1, 0), currentField.IntsToTile(1, 1));
     }
 }
 
