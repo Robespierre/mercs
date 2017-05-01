@@ -216,13 +216,55 @@ public class Field
     {
         return tileSet[i, j];
     }
-
-    public IEnumerator WalkThePath(Tile startTile, Tile finishTile)
+    public Tile UpperTile(Tile sourceTile)
+    {
+        if (sourceTile.GetI() + 1 < size)
+        {
+            return IntsToTile(sourceTile.GetI() + 1, sourceTile.GetJ());
+        } else
+        {
+            return null;
+        }
+    }
+    public Tile LowerTile(Tile sourceTile)
+    {
+        if (sourceTile.GetI() - 1 >= 0)
+        {
+            return IntsToTile(sourceTile.GetI() - 1, sourceTile.GetJ());
+        }
+        else
+        {
+            return null;
+        }
+    }
+    public Tile RightTile(Tile sourceTile)
+    {
+        if (sourceTile.GetJ() + 1 < size)
+        {
+            return IntsToTile(sourceTile.GetI(), sourceTile.GetJ() + 1);
+        }
+        else
+        {
+            return null;
+        }
+    }
+    public Tile LeftTile(Tile sourceTile)
+    {
+        if (sourceTile.GetJ() - 1 >= 0)
+        {
+            return IntsToTile(sourceTile.GetI(), sourceTile.GetJ() - 1);
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    public IEnumerator WalkToTile(Tile startTile, Tile finishTile)
     {
         Game_Script gameScript = GameObject.Find("GameManager").GetComponent<Game_Script>();
         gameScript.inputLocked = true;
         Tile[] walkway = FindPath(startTile, finishTile);
-
         for (int step = 0; step < walkway.Length - 1; step++)
         {
             yield return new WaitForSeconds(0.2f);
@@ -231,6 +273,40 @@ public class Field
         }
         gameScript.inputLocked = false;
     }
+    public IEnumerator WalkToAdjacent(Tile startTile, Tile finishTile)
+    {
+        Game_Script gameScript = GameObject.Find("GameManager").GetComponent<Game_Script>();
+        Field_Script fieldScript = GameObject.Find("GameManager").GetComponent<Field_Script>();
+        gameScript.inputLocked = true;
+        Tile[] walkway = null;
+        Tile[] adjTiles = new Tile[4] { fieldScript.currentField.UpperTile(finishTile),
+                                        fieldScript.currentField.LowerTile(finishTile),
+                                        fieldScript.currentField.LeftTile(finishTile),
+                                        fieldScript.currentField.RightTile(finishTile)};
+        foreach (Tile adjTile in adjTiles)
+        {
+            if ((adjTile != null) && (adjTile.GetOccupant() == null))//if the checked tile is okay
+            {
+                if ((walkway == null) || (walkway.Length > FindPath(startTile, adjTile).Length))//and the path is better than the current one
+                {
+                    walkway = FindPath(startTile, adjTile);
+                }
+            }
+        }
+        if (walkway == null)
+        {
+            Debug.Log("Can't get to adjacent tile!");
+            yield return null;
+        }
+        for (int step = 0; step < walkway.Length - 1; step++)
+        {
+            yield return new WaitForSeconds(0.2f);
+            OccupantStep(IntsToTile(walkway[step].GetI(), walkway[step].GetJ()), IntsToTile(walkway[step + 1].GetI(), walkway[step + 1].GetJ()));
+            yield return new WaitForSeconds(0.2f);
+        }
+        gameScript.inputLocked = false;
+    }
+
 }
 
 public class Tile

@@ -5,9 +5,15 @@ using UnityEngine;
 public class Unit_Script : MonoBehaviour {
 
     enum turnState { movement, action, done }
-    
-    void Awake ()
+
+    private int health;
+
+    public void ChangeHealth(int changeValue)
     {
-		
-	}
+        health -= changeValue;
+        if (health < 0)
+        {
+            health = 0;
+        }
+    }
 }

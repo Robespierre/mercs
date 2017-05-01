@@ -26,7 +26,7 @@ public class TileObject_Script : MonoBehaviour
             {
                 Debug.Log("cf");
             }
-            StartCoroutine(curField.WalkThePath(curField.IntsToTile(occScript.tileI, occScript.tileJ), curField.IntsToTile(tileI, tileJ)));//DEBUG NEEDED
+            StartCoroutine(curField.WalkToTile(curField.IntsToTile(occScript.tileI, occScript.tileJ), curField.IntsToTile(tileI, tileJ)));//DEBUG NEEDED
         }
     }
 }
