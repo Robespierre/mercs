@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class TileObject_Script : MonoBehaviour
 {
@@ -17,15 +15,16 @@ public class TileObject_Script : MonoBehaviour
 
     private void OnMouseUpAsButton()
     {
-        if (gameScript.currentGameState == Game_Script.GameState.playerTurn && !gameScript.inputLocked)
+        if (gameScript.CurrentGameState == Game_Script.GameState.PlayerTurn && gameScript.InputLocked == false)
         {
-            TileOccupant_Script occScript = gameScript.activeUnit.GetComponent<TileOccupant_Script>();
+            TileOccupant_Script occScript = gameScript.ActiveUnit.GetComponent<TileOccupant_Script>();
             curField = GameObject.Find("GameManager").GetComponent<Field_Script>().currentField;
             //ADD CHECK IF IT'S MOVEMENT STATE FOR THE MERC
             if (curField == null)
             {
                 Debug.Log("cf");
             }
+            // possible NullReferenceException. This situation should be handled
             StartCoroutine(curField.WalkToTile(curField.IntsToTile(occScript.tileI, occScript.tileJ), curField.IntsToTile(tileI, tileJ)));//DEBUG NEEDED
         }
     }

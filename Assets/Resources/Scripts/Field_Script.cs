@@ -42,16 +42,17 @@ public class Field
 
     public void SpawnField()
     {
-        float startPoint = ((size / 2.0f) - 0.5f);
-        Vector2 tilePos = new Vector2(startPoint, startPoint);
-        for (int i = 0; i < size; i++)
+        var startPoint = size / 2.0f - 0.5f;
+        var tilePos = new Vector2(startPoint, startPoint);
+        for (var i = 0; i < size; i++)
         {
-            for (int j = 0; j < size; j++)
+            for (var j = 0; j < size; j++)
             {
-                Tile newTile = new Tile();
+                var newTile = new Tile();
                 tileSet[i, j] = newTile;
-                GameObject newTileObject = GameObject.Instantiate(Resources.Load("Prefabs/Tile")) as GameObject;
+                var newTileObject = GameObject.Instantiate(Resources.Load("Prefabs/Tile")) as GameObject;
                 newTile.AssignGameObject(newTileObject);
+                // ToDo: possible NullRef here. Need to handle this cases
                 newTileObject.transform.position = tilePos;
                 tilePos = new Vector2(tilePos.x - 1, tilePos.y);
             }
@@ -60,8 +61,8 @@ public class Field
     }
     public Tile GetEmptyLeft() //returns random tile in a left column
     {
-        List<Tile> emptyLeftTiles = new List<Tile>();
-        for (int row = 0; row < size; row++)
+        var emptyLeftTiles = new List<Tile>();
+        for (var row = 0; row < size; row++)
         {
             if (tileSet[row, size] == null)
             {
@@ -112,8 +113,12 @@ public class Field
         startTile.SetOccupant(null);
         finishTile.GetOccupant().GetComponent<TileOccupant_Script>().tileI = finishTile.GetI();
         finishTile.GetOccupant().GetComponent<TileOccupant_Script>().tileJ = finishTile.GetJ();
-        finishTile.GetOccupant().transform.position = new Vector3(finishTile.GetGameObject().transform.position.x, finishTile.GetGameObject().transform.position.y, finishTile.GetOccupant().transform.position.z);
+        finishTile.GetOccupant().transform.position = new Vector3(finishTile.GetGameObject().transform.position.x,
+                                                                  finishTile.GetGameObject().transform.position.y,
+                                                                  finishTile.GetOccupant().transform.position.z);
     }
+
+    // ToDo: refactor this method cause it's very big with too many if conditions
     public Tile[] FindPath(Tile startTile, Tile finishTile)
     {
         if (startTile == finishTile)
@@ -212,19 +217,14 @@ public class Field
         }
         return path;
     }
+
     public Tile IntsToTile(int i, int j)
     {
         return tileSet[i, j];
     }
     public Tile UpperTile(Tile sourceTile)
     {
-        if (sourceTile.GetI() + 1 < size)
-        {
-            return IntsToTile(sourceTile.GetI() + 1, sourceTile.GetJ());
-        } else
-        {
-            return null;
-        }
+        return sourceTile.GetI() + 1 < size ? IntsToTile(sourceTile.GetI() + 1, sourceTile.GetJ()) : null;
     }
     public Tile LowerTile(Tile sourceTile)
     {
@@ -262,27 +262,33 @@ public class Field
     
     public IEnumerator WalkToTile(Tile startTile, Tile finishTile)
     {
-        Game_Script gameScript = GameObject.Find("GameManager").GetComponent<Game_Script>();
-        gameScript.inputLocked = true;
+        var gameScript = GameObject.Find("GameManager").GetComponent<Game_Script>();
+        gameScript.InputLocked = true;
         Tile[] walkway = FindPath(startTile, finishTile);
-        for (int step = 0; step < walkway.Length - 1; step++)
+        if (walkway != null)
         {
-            yield return new WaitForSeconds(0.2f);
-            OccupantStep(IntsToTile(walkway[step].GetI(), walkway[step].GetJ()), IntsToTile(walkway[step+1].GetI(), walkway[step+1].GetJ()));
-            yield return new WaitForSeconds(0.2f);
+            for (var step = 0; step < walkway.Length - 1; step++)
+            {
+                yield return new WaitForSeconds(0.2f);
+                OccupantStep(IntsToTile(walkway[step].GetI(), walkway[step].GetJ()), IntsToTile(walkway[step+1].GetI(), walkway[step+1].GetJ()));
+                yield return new WaitForSeconds(0.2f);
+            }
         }
-        gameScript.inputLocked = false;
+
+        gameScript.InputLocked = false;
     }
     public IEnumerator WalkToAdjacent(Tile startTile, Tile finishTile)
     {
-        Game_Script gameScript = GameObject.Find("GameManager").GetComponent<Game_Script>();
-        Field_Script fieldScript = GameObject.Find("GameManager").GetComponent<Field_Script>();
-        gameScript.inputLocked = true;
+        var gameScript = GameObject.Find("GameManager").GetComponent<Game_Script>();
+        var fieldScript = GameObject.Find("GameManager").GetComponent<Field_Script>();
+        gameScript.InputLocked = true;
         Tile[] walkway = null;
-        Tile[] adjTiles = new Tile[4] { fieldScript.currentField.UpperTile(finishTile),
-                                        fieldScript.currentField.LowerTile(finishTile),
-                                        fieldScript.currentField.LeftTile(finishTile),
-                                        fieldScript.currentField.RightTile(finishTile)};
+        Tile[] adjTiles = {
+                            fieldScript.currentField.UpperTile(finishTile),
+                            fieldScript.currentField.LowerTile(finishTile),
+                            fieldScript.currentField.LeftTile(finishTile),
+                            fieldScript.currentField.RightTile(finishTile)
+                          };
         foreach (Tile adjTile in adjTiles)
         {
             if ((adjTile != null) && (adjTile.GetOccupant() == null))//if the checked tile is okay
@@ -304,7 +310,7 @@ public class Field
             OccupantStep(IntsToTile(walkway[step].GetI(), walkway[step].GetJ()), IntsToTile(walkway[step + 1].GetI(), walkway[step + 1].GetJ()));
             yield return new WaitForSeconds(0.2f);
         }
-        gameScript.inputLocked = false;
+        gameScript.InputLocked = false;
     }
 
 }

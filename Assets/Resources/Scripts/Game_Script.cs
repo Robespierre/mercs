@@ -1,51 +1,65 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
-public class Game_Script : MonoBehaviour {
+public class Game_Script : MonoBehaviour
+{
 
-    public enum GameState { playerTurn, enemyTurn, aftermath}
-    public GameState currentGameState;
-    public GameObject activeUnit;
-    public bool inputLocked;
+    [SerializeField]
+    private GameState firstGameState;
 
-    public BottomButton_Script bottomButtonScript;
+    public enum GameState
+    {
+        PlayerTurn = 1,
+        EnemyTurn = 2,
+        Aftermath = 3
+    }
+
+    public GameState CurrentGameState { get; private set; }
+
+    public bool InputLocked { get; set; }
+
+    [SerializeField]
+    private BottomButton_Script bottomButtonScript;
+
+    public GameObject ActiveUnit { get; private set; }
 
     private void Start()
     {
-        ChangeGameState(GameState.playerTurn);
-        activeUnit = GameObject.Find("Archer");//REMOVE. PLACEHOLDER
-        inputLocked = false;
+        ChangeGameState(firstGameState);
+        ActiveUnit = GameObject.Find("Archer");//REMOVE. PLACEHOLDER
+        InputLocked = false;
     }
 
     public void ChangeGameState (GameState newState)
     {
         switch (newState)
         {
-            case GameState.playerTurn:
+            case GameState.PlayerTurn:
                 {
                     bottomButtonScript.ChangeButtonState(BottomButton_Script.bottomButtonState.playerMove);
                     break;
                 }
-            case GameState.enemyTurn:
+            case GameState.EnemyTurn:
                 {
                     bottomButtonScript.ChangeButtonState(BottomButton_Script.bottomButtonState.enemyMove);
                     StartCoroutine(PlaceholderEnemyMove());
                     break;
                 }
-            case GameState.aftermath:
+            case GameState.Aftermath:
                 {
-                    //shouldn't happen yet
-                    break;
+                    throw new NotImplementedException();
                 }
+            default:
+                throw new NotImplementedException();
         }
-        currentGameState = newState;
-        Debug.Log("New game state = " + currentGameState);
+        CurrentGameState = newState;
+        Debug.Log("New game state = " + CurrentGameState);
     }
 
     IEnumerator PlaceholderEnemyMove()
     {
         yield return new WaitForSeconds(3.0f);
-        ChangeGameState(GameState.playerTurn);
+        ChangeGameState(GameState.PlayerTurn);
     }
 }

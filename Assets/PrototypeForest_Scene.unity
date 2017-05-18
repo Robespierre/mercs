@@ -3016,9 +3016,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbf4bf5f527aa70468976a14eee442dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentGameState: 0
-  activeUnit: {fileID: 0}
-  inputLocked: 0
+  firstGameState: 1
   bottomButtonScript: {fileID: 278826281}
 --- !u!4 &1044117093
 Transform:
