@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class BottomButton_Script : MonoBehaviour
@@ -41,12 +39,14 @@ public class BottomButton_Script : MonoBehaviour
                 }
         }
     }
+
+    // I like this nazvanie :))
     void CostylClick()//I KNOW THIS IS UTTERLY WRONG, GONNA REWRITE IT
     {
         myAction();
     }
     void StartEnemyMove()
     {
-        gameScript.ChangeGameState(Game_Script.GameState.enemyTurn);
+        gameScript.ChangeGameState(Game_Script.GameState.EnemyTurn);
     }
 }

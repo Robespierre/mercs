@@ -4,7 +4,10 @@ using UnityEngine;
 
 public class Unit_Script : MonoBehaviour {
 
-    enum turnState { movement, action, done }
+    enum turnState
+    {
+        movement, action, done
+    }
 
     private int health;
 
